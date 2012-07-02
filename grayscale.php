@@ -86,9 +86,9 @@ function graythumb_check_grayscal_image($metadata, $attachment_id){
     if ( preg_match('!image!', get_post_mime_type( $attachment )) ) {
         foreach($metadata['sizes'] as $size => $size_data){
             if(isset($_wp_additional_image_sizes[$size]['grayscale']) && $_wp_additional_image_sizes[$size]['grayscale']) {
-                $upload = wp_upload_dir();
+                $file = pathinfo(get_attached_file($attachment_id));
                 $metadata['sizes'][$size.'-gray'] = $metadata['sizes'][$size];
-                $metadata['sizes'][$size.'-gray']['file'] = _wp_relative_upload_path(graythumb_make_grayscal_image($upload['path'].'/'.$size_data['file']));
+                $metadata['sizes'][$size.'-gray']['file'] = _wp_relative_upload_path(graythumb_make_grayscal_image($file['dirname'].'/'.$size_data['file']));
             }
         }
     }
