@@ -1,10 +1,25 @@
 <?php
 /*
  * Plugin Name: Grayscale
- * Plugin URI: http://www.1nterval.com
- * Description: Automatically create grayscale thumbnails for a given size
+ * Author URI: http://www.1nterval.com
+ * Description: Automatically create grayscale thumbnails for a given image size
  * Author: Fabien Quatravaux
  * Version: 1.0
+ 
+  Copyright © 2012  Fabien Quatravaux  (email : fabien.quatravaux@1nterval.com)
+    
+    Grayscale is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Grayscale is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Grayscale.  If not, see <http://www.gnu.org/licenses/>
 */
 
 register_activation_hook(__FILE__, 'grayscale_check'); 
