@@ -42,5 +42,5 @@ There is no user interface.
 = 1.0 =
 * Initial version
 
-= 1.1
+= 1.1 =
 * Minor change in documentation
