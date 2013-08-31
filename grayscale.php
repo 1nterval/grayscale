@@ -46,75 +46,37 @@ function grayscale_add_image_size( $name, $width = 0, $height = 0, $crop = false
 	$_wp_additional_image_sizes[$name] = array( 'width' => absint( $width ), 'height' => absint( $height ), 'crop' => (bool) $crop, 'grayscale' => (bool) $grayscale );
 }
 
-// actualy create the black and white image
-function grayscale_make_grayscale_image($resized_file){
-    $image = wp_load_image( $resized_file );
-    if ( !is_resource( $image ) )
-	    return new WP_Error( 'error_loading_image', $image, $resized_file );
-	    
-    $size = @getimagesize( $resized_file );
-    if ( !$size )
-	    return new WP_Error('invalid_image', __('Could not read image size'), $resized_file);
-    list($orig_w, $orig_h, $orig_type) = $size;
-    
-     // Apply grayscale filter
-    $dest = wp_load_image( $resized_file );
-    imagecopymergegray($dest, $image, 0, 0, 0, 0, $orig_w, $orig_h, 0);
-    imagegammacorrect($dest, 1.0, 0.7);
-
-    $info = pathinfo($resized_file);
-    $dir = $info['dirname'];
-    $ext = $info['extension'];
-    $name = wp_basename($resized_file, ".$ext");
-
-    $destfilename = "{$dir}/{$name}-gray.{$ext}";
-
-    if ( IMAGETYPE_GIF == $orig_type ) {
-	    if ( !imagegif( $dest, $destfilename ) )
-		    return new WP_Error('resize_path_invalid', __( 'Resize path invalid' ));
-    } elseif ( IMAGETYPE_PNG == $orig_type ) {
-	    if ( !imagepng( $dest, $destfilename ) )
-		    return new WP_Error('resize_path_invalid', __( 'Resize path invalid' ));
-    } else {
-	    // all other formats are converted to jpg
-	    $destfilename = "{$dir}/{$name}-gray.jpg";
-	    if ( !imagejpeg( $dest, $destfilename, apply_filters( 'jpeg_quality', 90, 'image_resize' ) ) )
-		    return new WP_Error('resize_path_invalid', __( 'Resize path invalid' ));
-    }
-
-    imagedestroy( $image );
-    imagedestroy( $dest );
-
-    // Set correct file permissions
-    $stat = stat( dirname( $destfilename ));
-    $perms = $stat['mode'] & 0000666; //same permissions as parent folder, strip off the executable bits
-    @ chmod( $destfilename, $perms );
-
-    return wp_basename($destfilename);
-}
-
 // hook to call the image generation function if needed
 add_filter('wp_generate_attachment_metadata', 'grayscale_check_grayscale_image', 10, 2);
 function grayscale_check_grayscale_image($metadata, $attachment_id){
     global $_wp_additional_image_sizes;
     $attachment = get_post( $attachment_id );
     if ( preg_match('!image!', get_post_mime_type( $attachment )) ) {
+    
+        require_once('class-grayscale-image-editor.php');
+        
         foreach($_wp_additional_image_sizes as $size => $size_data){
             if(isset($size_data['grayscale']) && $size_data['grayscale']) {
                 if(is_array($metadata['sizes']) && isset($metadata['sizes'][$size])){
                     $file = pathinfo(get_attached_file($attachment_id));
+                    $filename = $file['dirname'].'/'.$metadata['sizes'][$size]['file'];
                     $metadata['sizes'][$size.'-gray'] = $metadata['sizes'][$size];
-                    $metadata['sizes'][$size.'-gray']['file'] = _wp_relative_upload_path(grayscale_make_grayscale_image($file['dirname'].'/'.$metadata['sizes'][$size]['file']));
                 } else {
                     // this size has no image attached, probably because the original is too small
                     // create the grayscale image from the original file
                     $file = wp_upload_dir();
+                    $filename = $file['basedir'].'/'.$metadata['file'];
                     $metadata['sizes'][$size.'-gray'] = array(
                         'width' => $metadata['width'], 
                         'height' => $metadata['height'],
-                        'file' => _wp_relative_upload_path(grayscale_make_grayscale_image($file['basedir'].'/'.$metadata['file'])),
                     );
                 }
+                
+                $image = new Grayscale_Image_Editor($filename);
+                $image->load();
+                $image->make_grayscale();
+                $result = $image->save($image->generate_filename('gray'));
+                $metadata['sizes'][$size.'-gray']['file'] = $result['file'];
             }
         }
     }
