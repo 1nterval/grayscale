@@ -4,7 +4,7 @@
  * Author URI: http://www.1nterval.com
  * Description: Automatically create grayscale thumbnails for a given image size
  * Author: Fabien Quatravaux
- * Version: 1.0
+ * Version: 1.1
  
   Copyright © 2012  Fabien Quatravaux  (email : fabien.quatravaux@1nterval.com)
     
