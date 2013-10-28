@@ -99,16 +99,26 @@ function grayscale_check_grayscale_image($metadata, $attachment_id){
     global $_wp_additional_image_sizes;
     $attachment = get_post( $attachment_id );
     if ( preg_match('!image!', get_post_mime_type( $attachment )) ) {
-        foreach($metadata['sizes'] as $size => $size_data){
-            if(isset($_wp_additional_image_sizes[$size]['grayscale']) && $_wp_additional_image_sizes[$size]['grayscale']) {
-                $file = pathinfo(get_attached_file($attachment_id));
-                $metadata['sizes'][$size.'-gray'] = $metadata['sizes'][$size];
-                $metadata['sizes'][$size.'-gray']['file'] = _wp_relative_upload_path(grayscale_make_grayscale_image($file['dirname'].'/'.$size_data['file']));
+        foreach($_wp_additional_image_sizes as $size => $size_data){
+            if(isset($size_data['grayscale']) && $size_data['grayscale']) {
+                if(is_array($metadata['sizes']) && isset($metadata['sizes'][$size])){
+                    $file = pathinfo(get_attached_file($attachment_id));
+                    $metadata['sizes'][$size.'-gray'] = $metadata['sizes'][$size];
+                    $metadata['sizes'][$size.'-gray']['file'] = _wp_relative_upload_path(grayscale_make_grayscale_image($file['dirname'].'/'.$metadata['sizes'][$size]['file']));
+                } else {
+                    // this size has no image attached, probably because the original is too small
+                    // create the grayscale image from the original file
+                    $file = wp_upload_dir();
+                    $metadata['sizes'][$size.'-gray'] = array(
+                        'width' => $metadata['width'], 
+                        'height' => $metadata['height'],
+                        'file' => _wp_relative_upload_path(grayscale_make_grayscale_image($file['basedir'].'/'.$metadata['file'])),
+                    );
+                }
             }
         }
     }
     return $metadata;
 }
-
     
 ?>
