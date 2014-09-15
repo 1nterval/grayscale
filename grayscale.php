@@ -43,7 +43,7 @@ function grayscale_init() {
 // provide a new function to declare grayscaled images
 function grayscale_add_image_size( $name, $width = 0, $height = 0, $crop = false, $grayscale = false ) {
 	global $_wp_additional_image_sizes;
-	$_wp_additional_image_sizes[$name] = array( 'width' => absint( $width ), 'height' => absint( $height ), 'crop' => (bool) $crop, 'grayscale' => (bool) $grayscale );
+	$_wp_additional_image_sizes[$name] = array( 'width' => absint( $width ), 'height' => absint( $height ), 'crop' => $crop, 'grayscale' => (bool) $grayscale );
 }
 
 // hook to call the image generation function if needed
